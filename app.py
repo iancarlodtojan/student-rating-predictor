@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import joblib
@@ -6,13 +7,13 @@ import joblib
 data = joblib.load("student_rating_model.joblib")
 model = data["model"]
 
-# App title
-st.title("Student Rating Prediction System")
+# Title
+st.title("Student Performance Prediction")
 
-st.write("Enter the student's LMS activities to predict their rating.")
+st.write("Enter the student's LMS activity data below.")
 
-# Student LMS input form
-with st.form("student_form"):
+# Input form
+with st.form("prediction_form"):
 
     submission = st.text_input("Submission Actions", "0")
     quiz = st.text_input("Quiz Actions", "0")
@@ -23,14 +24,11 @@ with st.form("student_form"):
     delete = st.text_input("Delete Actions", "0")
     days = st.text_input("Days Logged In", "0")
 
-    # Submit button
-    predict = st.form_submit_button("Predict Rating")
+    predict = st.form_submit_button("Predict")
 
 # Prediction
 if predict:
-
     try:
-        # Convert inputs into integers
         values = [
             int(submission),
             int(quiz),
@@ -42,25 +40,29 @@ if predict:
             int(days)
         ]
 
-        # Check for negative values
         if any(value < 0 for value in values):
-            st.error("Please enter non-negative numbers only.")
+            st.error("Please enter non-negative numbers.")
 
         else:
-            # Prepare input data
-            columns = data["features"]
-            student_data = pd.DataFrame([values], columns=columns)
+            # Prepare student data
+            student_data = pd.DataFrame(
+                [values],
+                columns=data["features"]
+            )
 
-            # Predict student rating
-            prediction = model.predict(student_data)[0]
+            # Predict rating
+            result = model.predict(student_data)[0]
 
             # Display result
             st.subheader("Prediction Result")
 
-            if prediction == "High":
-                st.success("Student Rating: HIGH")
+            if result == "High":
+                st.write("Likely to Pass")
+                st.write("Predicted Rating: High")
             else:
-                st.warning("Student Rating: LOW")
+                st.write("Likely to Fail")
+                st.write("Predicted Rating: Low")
+
 
     except ValueError:
-        st.error("Please enter valid whole numbers in all fields.")
+        st.error("Please enter valid whole numbers.")
